@@ -10,6 +10,55 @@ const {
     destroyFavorite
 } = require('./db') // export a postgres client from db.js
 
+const express = require('express')
+const app = express()
+
+// Routes
+app.get('/api/users', async(req, res, next)=>{ // return an array of users
+    try {
+        res.send(await fetchUsers())
+    } catch (error) {
+        next(error)
+    }
+})
+
+// return an array of products
+app.get('/api/products', async(req, res, next)=>{
+    try {
+        res.send(await fetchProducts())
+    } catch (error) {
+        next(error)
+    }
+})
+
+// return an array of favorites for the user
+app.get('/api/users/:id/favorites', async(req, res, next)=>{
+    try {
+        res.send(await fetchFavorites(req.params.id))
+    } catch (error) {
+        next(error)
+    }
+})
+
+// returns the created favorite with a status code of 201
+app.post('/api/users/:id/favorites', async(req, res, next)=>{
+    try {
+        
+    } catch (error) {
+        next(error)
+    }
+})
+
+// returns nothing with a status code of 204
+app.delete('/api/users/:userId/favorites/:id', async(req, res, next)=>{
+    try {
+        
+    } catch (error) {
+        next(error)
+    }
+})
+
+
 const init = async() =>{
     // connect postgres client in this init function
     await client.connect()
@@ -43,6 +92,12 @@ const init = async() =>{
     console.log("favorites: ", await fetchFavorites(moe.id))
     await destroyFavorite(favorites[0].id)
     console.log("Favorites after deletion: ", await fetchFavorites(moe.id))
+
+    // Testing
+    // console.log(`CURL localhost:3000/api/users/${lucy.id}/favorites`)
+
+    const port = process.env.PORT || 3000
+    app.listen(port, ()=> console.log(`listening on port ${port}`))
 }
 
 init()
