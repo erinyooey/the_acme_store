@@ -1,4 +1,14 @@
-const {client, createTables, createUser, createProduct} = require('./db') // export a postgres client from db.js
+const {
+    client, 
+    createTables,
+    createUser,
+    fetchUsers,
+    createProduct,
+    fetchProducts,
+    createFavorite,
+    fetchFavorites,
+    destroyFavorite
+} = require('./db') // export a postgres client from db.js
 
 const init = async() =>{
     // connect postgres client in this init function
@@ -16,8 +26,23 @@ const init = async() =>{
         createProduct({name: 'jeans'}),
         createProduct({name: 'earbuds'})
     ]);
-    console.log("moe.id: ",moe.id);
-    console.log("bag.id: ", bag.id)
+    const users = await fetchUsers()
+    console.log("Users: ", users)
+
+    const products = await fetchProducts()
+    console.log("Products: ", products)
+
+    const favorites = await Promise.all([
+        createFavorite({user_id: moe.id, product_id: bag.id}),
+        createFavorite({user_id: lucy.id, product_id: bag.id}),
+        createFavorite({user_id: moe.id, product_id: jeans.id}),
+        createFavorite({user_id: ethyl.id, product_id: phone.id}),
+        createFavorite({user_id: ethyl.id, product_id: earbuds.id})
+    ])
+
+    console.log("favorites: ", await fetchFavorites(moe.id))
+    await destroyFavorite(favorites[0].id)
+    console.log("Favorites after deletion: ", await fetchFavorites(moe.id))
 }
 
 init()

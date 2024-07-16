@@ -2,6 +2,7 @@ const pg = require("pg")
 const client = new pg.Client(process.env.DATABASE_URL || 'postgres://localhost/the_acme_store'
 )
 const uuid = require('uuid')
+const bcrypt = require('bcrypt')
 
 const createTables = async() => {
     const SQL = `
@@ -27,10 +28,13 @@ const createTables = async() => {
     await client.query(SQL);
 }
 
-// Seed data
+// Seed data, bcrypt for user
 const createUser = async({username, password}) => {
+    // SQL query string to insert a new user into the users table
     const SQL = `INSERT INTO users(id, username, password) VALUES($1, $2, $3) RETURNING *`
-    const response = await client.query(SQL, [uuid.v4(), username, password])
+    // Execute the SQL query w/ the provided values: a new unique id, username, and password
+    const response = await client.query(SQL, [uuid.v4(), username, await bcrypt.hash(password, 5)])
+    // Return newly created user record from the database
     return response.rows[0];
 }
 
@@ -40,9 +44,45 @@ const createProduct = async({name}) => {
     return response.rows[0];
 }
 
+const fetchUsers = async() => {
+    const SQL = `
+        SELECT * FROM users;
+    `
+    const response = await client.query(SQL)
+    return response.rows
+}
+
+const fetchProducts = async() => {
+    const SQL = `SELECT * FROM product`
+    const response = await client.query(SQL)
+    return response.rows
+}
+
+const createFavorite = async({user_id, product_id}) => {
+    const SQL = `INSERT INTO favorite(id, user_id, product_id) VALUES($1, $2, $3) RETURNING *`
+    const response = await client.query(SQL, [uuid.v4(), user_id, product_id])
+    return response.rows[0]
+}
+
+const fetchFavorites = async(id) =>{
+    const SQL =  `SELECT * FROM favorite WHERE user_id = $1`
+    const response = await client.query(SQL, [id])
+    return response.rows
+}
+
+const destroyFavorite = async({id, user_id}) => {
+    const SQL = `DELETE FROM favorite WHERE id=$1 AND user_id = $2`
+    await client.query(SQL, [id, user_id])
+}
+
 module.exports = {
     client,
     createTables,
     createUser,
-    createProduct
+    createProduct,
+    fetchUsers,
+    fetchProducts,
+    createFavorite,
+    fetchFavorites,
+    destroyFavorite
 };
