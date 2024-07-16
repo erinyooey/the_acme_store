@@ -43,7 +43,7 @@ app.get('/api/users/:id/favorites', async(req, res, next)=>{
 // returns the created favorite with a status code of 201
 app.post('/api/users/:id/favorites', async(req, res, next)=>{
     try {
-        
+        res.status(201).send(await createFavorite({user_id: req.params.id, product_id: req.body.product_id}))
     } catch (error) {
         next(error)
     }
@@ -52,7 +52,8 @@ app.post('/api/users/:id/favorites', async(req, res, next)=>{
 // returns nothing with a status code of 204
 app.delete('/api/users/:userId/favorites/:id', async(req, res, next)=>{
     try {
-        
+        await destroyFavorite({id: req.params.id, user_id: req.params.userId
+        })
     } catch (error) {
         next(error)
     }
@@ -95,6 +96,10 @@ const init = async() =>{
 
     // Testing
     // console.log(`CURL localhost:3000/api/users/${lucy.id}/favorites`)
+    // console.log(`CURL -X POST localhost:3000/api/users/${lucy.id}/favorites -d '{"product_id":"${phone.id}"}' -H 'Content-Type:application/json'`);
+    console.log(`curl -X DELETE localhost:3000/api/users/${ethyl.id}/favorites/${products[3].id}`);
+    console.log('data seeded');
+  
 
     const port = process.env.PORT || 3000
     app.listen(port, ()=> console.log(`listening on port ${port}`))
